@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EspacioSeguro - Apoyo Emocional para Jóvenes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #67c23a;
+            --warm-color: #f5a623;
+            --text-color: #2c3e50;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+        }
+
+        body {
+            background: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: clamp(10px, 3vw, 30px);
+        }
+
+        header {
+            background: var(--primary-color);
+            color: var(--white);
+            padding: clamp(1rem, 4vw, 2rem);
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .emergency-banner { 
+            background: #553d2a;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+        }
+
+        .emergency-banner a {
+            color: white;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: clamp(15px, 3vw, 30px);
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: var(--white);
+            padding: clamp(15px, 3vw, 25px);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+        }
+
+        .emotion-tracker {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .emotion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .emotion-btn {
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .emotion-btn:hover, .emotion-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .support-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #5aaf31;
+        }
+
+        @media (max-width: 768px) {
+            .emotion-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        footer {
+            background: var(--text-color);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        #moodChart {
+            max-height: 300px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="emergency-banner">
+        ¿Necesitas ayuda inmediata? Comunícate con nosotros: <a href="tel:3185567143">3185567143</a>
+    </div>
+
+    <header>
+        <h1>Espacio Seguro</h1>
+        <p>Un lugar seguro para compartir y encontrar apoyo</p>
+    </header>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <h3>Seguimiento del Estado de Ánimo</h3>
+                <div class="emotion-tracker">
+                    <p>¿Cómo te sientes hoy?</p>
+                    <div class="emotion-grid">
+                        <button class="emotion-btn" onclick="trackMood('Muy bien')">😊 Muy bien</button>
+                        <button class="emotion-btn" onclick="trackMood('Bien')">🙂 Bien</button>
+                        <button class="emotion-btn" onclick="trackMood('Normal')">😐 Normal</button>
+                        <button class="emotion-btn" onclick="trackMood('Triste')">😔 Triste</button>
+                        <button class="emotion-btn" onclick="trackMood('Ansioso')">😰 Ansioso</button>
+                        <button class="emotion-btn" onclick="trackMood('Agotado')">😫 Agotado</button>
+                    </div>
+                    <canvas id="moodChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Solicitar Apoyo</h3>
+                <form class="support-form" onsubmit="return handleSupportRequest(event)">
+                    <input type="text" placeholder="Nombre (opcional)" id="name">
+                    <input type="email" placeholder="Correo electrónico" required id="email">
+                    <select required id="supportType">
+                        <option value="">Tipo de apoyo que necesitas</option>
+                        <option value="conversation">Conversación con un voluntario</option>
+                        <option value="professional">Contacto con profesional</option>
+                        <option value="information">Información general</option>
+                    </select>
+                    <textarea placeholder="¿Cómo podemos ayudarte? Tu mensaje es confidencial." required id="message"></textarea>
+                    <button type="submit">Enviar Solicitud</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 EspacioSeguro - Un proyecto para el bienestar emocional</p>
+            <p>Línea de emergencia: <a href="tel:3185567143">3185567143</a></p>
+        </div>
+    </footer>
+
+    <script>
+        let moodData = {
+            labels: [],
+            values: []
+        };
+        let moodChart;
+
+        function initChart() {
+            const ctx = document.getElementById('moodChart').getContext('2d');
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Tu estado de ánimo',
+                        data: [],
+                        borderColor: '#4a90e2',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+
+        function trackMood(mood) {
+            const moodValues = {
+                'Muy bien': 5,
+                'Bien': 4,
+                'Normal': 3,
+                'Triste': 2,
+                'Ansioso': 2,
+                'Agotado': 1
+            };
+
+            const now = new Date();
+            const timeStr = now.getHours() + ':' + now.getMinutes();
+
+            moodData.labels.push(timeStr);
+            moodData.values.push(moodValues[mood]);
+
+            if (moodData.labels.length > 7) {
+                moodData.labels.shift();
+                moodData.values.shift();
+            }
+
+            updateChart();
+
+            document.querySelectorAll('.emotion-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(mood)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updateChart() {
+            moodChart.data.labels = moodData.labels;
+            moodChart.data.datasets[0].data = moodData.values;
+            moodChart.update();
+        }
+
+        function handleSupportRequest(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value || 'Anónimo';
+            const email = document.getElementById('email').value;
+            const supportType = document.getElementById('supportType').value;
+            const message = document.getElementById('message').value;
+
+            alert('Gracias por contactarnos. Te responderemos pronto a ' + email);
+            event.target.reset();
+            return false;
+        }
+
+        initChart();
+    </script>
+</body>
+</html>
